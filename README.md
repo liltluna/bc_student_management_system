@@ -20,7 +20,7 @@ for **python divide into groups**
 - 线程——并发访问database类，设计一个线程处理
 
 
-eg:创建游标的实例代码
+- [ ] eg:创建游标的实例代码
 ```
 conn = pymysql.connect(
     host='localhost',
@@ -29,6 +29,33 @@ conn = pymysql.connect(
     db='stu_info',
     charset='utf8',
 )
+```
+
+- [ ] eg:数据查询操作实例
+```
+cur = conn.cursor()
+SQL = """select * from info;"""
+cur.execute(SQL)
+data = cur.fetchall()
+print(line * 2)
+print("{:<12}{:<12}".format("name", "tele_no"))
+print(line * 2)
+for name, address, tele_no in data:
+    print("{:<12}{:<12}".format(name, tele_no))
+print(line * 2)
+cur.close()
+```
+
+- [ ] eg:数据库增加数据实例
+```
+cur = conn.cursor()
+name = input("name: ")
+address = input("address: ")
+tele_no = input("telephone: ")
+SQL = "insert into info values" + "('" + name + "' ,'" + address + "' ,'" + tele_no + "');"
+cur.execute(SQL)
+conn.commit()
+cur.close()
 ```
 ### 2 客户端模块
 客户端模块主要是GUI页面设计，以及内部数据逻辑的处理，需要做：
@@ -39,6 +66,24 @@ conn = pymysql.connect(
 - 登录数据包类，包含登录信息；
 - 用户类，包含用户信息；
 - 数据展示类，多种数据展示的类；
+
+序列化代码实例：
+```
+>>> stu = Student('Tom', 19, 1)
+>>> print(stu)
+Student [name: Tom, age: 19, sno: 1]
+
+# 序列化
+>>> var_b = pickle.dumps(stu)
+>>> var_b
+b'\x80\x03c__main__\nStudent\nq\x00)\x81q\x01}q\x02(X\x04\x00\x00\x00nameq\x03X\x03\x00\x00\x00Tomq\x04X\x03\x00\x00\x00ageq\x05K\x13X\x03\x00\x00\x00snoq\x06K\x01ub.'
+
+# 反序列化
+>>> var_c = pickle.loads(var_b)
+>>> var_c
+Student [name: Tom, age: 19, sno: 1]
+
+```
 
 #### 2.1 登录界面
 - 界面设计：包含一个下滑式表，用来选择教师、组长或者一般用户，然后是输入用户名和密码的框，最后是登录按钮，参考QQ登录界面，；
@@ -56,8 +101,23 @@ conn = pymysql.connect(
 ### 3 其他模块
 - 暂无设计
 
-##类图
-![类图 drawio](https://user-images.githubusercontent.com/88447898/168439980-6b2f4d54-3a17-45cc-b56a-5a82964aa214.svg)
+## 附：设计图&类图
+- [ ] 数据库设计
+- 规定：Students：用户类型为3，权限最低；TeamLeaders：用户类型2，权限中等；Master：用户类型1，权限较高；Administrator：用户类型0，至高权限。计划用两章表表示，根据查询/修改获取内容。
+- ![数据库design drawio](https://user-images.githubusercontent.com/88447898/168482272-eab70e04-d5ad-4fd5-996d-0e24cbb13950.svg)
+- [ ] 用户类
+- Master为基类，表示老师账户，GroupMember继承之，而TeamLeader又继承于GroupMember；
+- ![用户类 drawio](https://user-images.githubusercontent.com/88447898/168482112-59e184f9-1df0-4e83-9887-3150bf6b6097.svg)
+- [ ] 数据包类
+- 两类数据包，分别是客户端发送给服务器包含请求信息和服务器发给客户端包含查询信息；
+- ![数据包类 drawio](https://user-images.githubusercontent.com/88447898/168482423-c6485603-175e-4f18-a778-0b6ff0c3adc9.svg)
+- [ ] 服务器类
+- ![服务器类图 drawio](https://user-images.githubusercontent.com/88447898/168479279-a7f7081f-5740-47fb-aeeb-e38fdd1a41db.svg)
+- 服务器线程类
+- [ ] 客户端类
+- 
+
+
 
 
 ## 开发者：
