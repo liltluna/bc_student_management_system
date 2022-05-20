@@ -1,5 +1,10 @@
 # GPacket模块，用在客户端和服务器之间进行通讯交互
-# 包括Packet_operate和Packet_result，
+# 包括Packet_operate(基类，一般用不到)
+# Packet_add_info 
+# 增加信息的数据包类，以下类似
+# Packet_update_info
+# Packet_delete_info
+# Packet_search_info
 # 操作信号有以下几种
 # l: 登录
 # d: 删除某个用户的信息，需要使用setter设置被删除的用户
