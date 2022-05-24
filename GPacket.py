@@ -41,7 +41,7 @@ class Packet_login(Packet_operate):
         self.setOperate_type('l')
 
 
-# problem : 泛化问题
+# problem : 泛化问题不存在，因为不需要规定好类的种类，执行的时候只需要判断一下类型
 class Packet_add_info(Packet_operate):
     def __init__(self):
         super(Packet_add_info, self).__init__()
@@ -74,10 +74,10 @@ class Packet_delete_info(Packet_operate):
         self.setOperate_type('d')
         self.__delete_info = None
 
-    def setUpdate_info(self, delete_info: GUser.GroupMember):
+    def setDelete_info(self, delete_info: GUser.GroupMember):
         self.__delete_info = delete_info
 
-    def getUpdate_info(self) -> GUser.GroupMember:
+    def getDelete_info(self) -> GUser.GroupMember:
         return self.__delete_info
 
 
@@ -103,11 +103,12 @@ class Packet_response_login:
         return self.__is_password_correct
 
 
-class Packet_response_update:
+class Packet_response_is_successful:
     """
     这个类使用来告诉客户端更新操作是否完成，
     相关的数据只有一个布尔类型的成员以及getter和setter
     """
+
     def __init__(self):
         self.__is_successful = False
 
@@ -117,3 +118,14 @@ class Packet_response_update:
     def getOperate_result(self):
         """返回一个布尔类型的实例，表示操作是否成功"""
         return self.__is_successful
+
+
+class Packet_response_data:
+    def __init__(self):
+        self.__data = None
+
+    def setData(self, data):
+        self.__data = data
+
+    def getData(self):
+        return self.__data
