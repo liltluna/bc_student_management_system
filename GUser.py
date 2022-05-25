@@ -1,10 +1,15 @@
 class Master:
-
+    """
+    0:老师
+    1：组长
+    2：学生
+    """
     def __init__(self):
-        self.__name = ''
-        self.__sex = ''
-        self.__password = ''
-        self.__user_type = ''
+        self.__name = None
+        self.__sex = None
+        self.__password = None
+        self.__user_type = -1
+        self.__user_name = None
 
     def getName(self) -> str:
         return self.__name
@@ -18,6 +23,9 @@ class Master:
     def getUser_type(self) -> int:
         return self.__user_type
 
+    def getUser_name(self) -> str:
+        return self.__user_name
+
     def setName(self, name: str = ''):
         self.__name = name
 
@@ -30,8 +38,11 @@ class Master:
     def setUser_type(self, user_type: int):
         self.__user_type = user_type
 
+    def setUser_name(self, user_name: str):
+        self.__user_name = user_name
 
-class GroupLeader(Master):
+
+class GroupMember(Master):
     def __init__(self):
         super().__init__()
         self.__student_number = ''
