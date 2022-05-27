@@ -2,7 +2,6 @@ import pickle
 import socket
 import threading
 import pymysql
-
 import GPacket
 
 
@@ -44,12 +43,15 @@ class Server:
         server_socket.bind(ADDR)
         server_socket.listen()
 
-        while True:
-            client_socket, addr = server_socket.accept()
-            response_thread = ResponseClient()
-            response_thread.set_conn_and_client(self.__conn, client_socket)
-            print('Get connection from:', addr)
-            response_thread.start()
+        try:
+            while True:
+                client_socket, addr = server_socket.accept()
+                response_thread = ResponseClient()
+                response_thread.set_conn_and_client(self.__conn, client_socket)
+                print('Get connection from:', addr)
+                response_thread.start()
+        except ConnectionResetError:
+            print('Connection reset.')
 
         # 这是异步的方式实现连接多个客户端
         # while True:
@@ -209,6 +211,7 @@ class ResponseClient(threading.Thread):
         self.recordOperate(user.getUser_name(), info.getUser_name(), 'a')
 
     def responseSearch(self):
+        data = None
         user = self.__packet.getOperator()
         cur = self.__conn.cursor()
         packet_response = GPacket.Packet_response_is_successful()
@@ -233,7 +236,7 @@ class ResponseClient(threading.Thread):
             exit(0)
         data_packet = GPacket.Packet_response_data()
         data_packet.setData(data)
-        bd = pickle.dumps(data)
+        bd = pickle.dumps(data_packet)
         self.__target_client.send(bd)
         cur.close()
         packet_response.setOperate_result(False)
@@ -242,17 +245,29 @@ class ResponseClient(threading.Thread):
         self.recordOperate(user.getUser_name(), user.getUser_name(), 's')
 
     def run(self):
-        while True:
-            data = self.__target_client.recv(1024)
-            if not data:
-                break
-            self.__packet = pickle.loads(data)
-            operate_type = self.__packet.getOperate_type()
-            if operate_type == 'l':
-                self.responseLogin()
-            elif operate_type == 'u':
-                pass
-        print('end...')
+        try:
+            while True:
+                data = self.__target_client.recv(1024)
+                if not data:
+                    break
+                self.__packet = pickle.loads(data)
+                operate_type = self.__packet.getOperate_type()
+                if operate_type == 'l':
+                    self.responseLogin()
+                elif operate_type == 'u':
+                    self.responseUpdate()
+                elif operate_type == 's':
+                    self.responseSearch()
+                elif operate_type == 'a':
+                    self.responseAdd()
+                elif operate_type == 'd':
+                    self.responseDelete()
+                else:
+                    print("receive an unknown command.")
+            print('end...')
+        except ConnectionResetError:
+            print('Warning: This is an Error\n'
+                  'Connection was forced to reset.')
 
 
 if __name__ == '__main__':
