@@ -103,13 +103,29 @@ Student [name: Tom, age: 19, sno: 1]
 
 ## 附：设计图&类图
 - [ ] 数据库设计
-- 规定：Students：用户类型为3，权限最低；TeamLeaders：用户类型2，权限中等；Master：用户类型1，权限较高；Administrator：用户类型0，至高权限。计划用两章表表示，根据查询/修改获取内容。
+- 规定：Students：用户类型为3，权限最低；TeamLeaders：用户类型2，权限中等；Master：用户类型1，
+- ~权限较高；Administrator：用户类型0，至高权限。计划用两章表表示，根据查询/修改获取内容。~
+
+
 #模块/类图如下
 - ![packages](https://user-images.githubusercontent.com/88447898/170612416-bfc65b8e-68e9-4888-8d03-647807b46002.svg)
 - ![classes](https://user-images.githubusercontent.com/88447898/170612436-71dc60a5-51e9-4822-b64d-ab9b012f0cf6.svg)
 
+## 任务列表
+### 客户端
+- [x] design GUI 杨光
+- [x] 代码实现GUI 杨光
+- [ ] 后端服务器客户端交互代码实现
+- [ ] 根据前端使用逻辑与后端结合
 
+### 服务器
+- [x] 设计数据包类 许振华
+- [x] 实现数据库与服务器的通信（包含信息查询） 许振华
+- [x] 在类中实现服务器和客户端的交互以及在数据库中的相应数据查询 许振华
 
+### 杂项
+- [x] 设计GUI页面 殷嘉材
+- [ ] 对已有的客户端服务器代码进行测试，找bug 殷嘉材
 
 
 ## 开发者：
