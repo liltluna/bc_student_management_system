@@ -104,18 +104,10 @@ Student [name: Tom, age: 19, sno: 1]
 ## 附：设计图&类图
 - [ ] 数据库设计
 - 规定：Students：用户类型为3，权限最低；TeamLeaders：用户类型2，权限中等；Master：用户类型1，权限较高；Administrator：用户类型0，至高权限。计划用两章表表示，根据查询/修改获取内容。
-- ![数据库design drawio](https://user-images.githubusercontent.com/88447898/168482272-eab70e04-d5ad-4fd5-996d-0e24cbb13950.svg)
-- [ ] 用户类
-- Master为基类，表示老师账户，GroupMember继承之，而TeamLeader又继承于GroupMember；
-- ![用户类 drawio](https://user-images.githubusercontent.com/88447898/168482112-59e184f9-1df0-4e83-9887-3150bf6b6097.svg)
-- [ ] 数据包类
-- 两类数据包，分别是客户端发送给服务器包含请求信息和服务器发给客户端包含查询信息；
-- ![数据包类 drawio](https://user-images.githubusercontent.com/88447898/168482423-c6485603-175e-4f18-a778-0b6ff0c3adc9.svg)
-- [ ] 服务器类
-- ![服务器类图 drawio](https://user-images.githubusercontent.com/88447898/168479279-a7f7081f-5740-47fb-aeeb-e38fdd1a41db.svg)
-- 服务器线程类
-- [ ] 客户端类
-- 
+#模块/类图如下
+- ![packages](https://user-images.githubusercontent.com/88447898/170612416-bfc65b8e-68e9-4888-8d03-647807b46002.svg)
+- ![classes](https://user-images.githubusercontent.com/88447898/170612436-71dc60a5-51e9-4822-b64d-ab9b012f0cf6.svg)
+
 
 
 
