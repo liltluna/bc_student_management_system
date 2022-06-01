@@ -43,6 +43,7 @@ class client:
             self.tcpCliSock.connect(self.ADDR)
         except:
              messagebox.askokcancel(title='提示', message='连接失败，请检查你的网络')
+             exit(0)
         else:
             self.Login()
 
@@ -139,8 +140,8 @@ class client:
         operator = Packet_operate()
         operator.setOperator(GM)
         packet1 = Packet_login()  # 登陆请求
-        packet2 = Packet_search_info(operator)  # 查询请求
-
+        packet2 = Packet_search_info()  # 查询请求
+        packet2.setOperator(operator)
         res1 = self.communicate(packet1)
         res2 = self.communicate(packet2)
 
@@ -228,6 +229,7 @@ class client:
             iid = tree.selection()
             packet = Packet_delete_info()
             packet.setOperator(operator)
+            
             d = tree.item(tree.focus())
             delee = GUser.GroupMember()
             delee.setStuent_number(d['student_number'])
@@ -288,7 +290,17 @@ class client:
             packet.setOperator(operator)
             addMember = GUser.GroupMember()
 
-            packet.setAdd_information()addMember)
+            addMember.setName(get['name'])
+            addMember.setSex(get['sex'])
+            addMember.setPassword(get['password'])
+            addMember.setUser_type(get['user_type'])
+            addMember.setUser_name(get['username'])
+            addMember.setGroup_number(get['group_number'])
+            addMember.setStudent_number(get['student_number'])
+            addMember.setQQ_number(get['qq_number'])
+
+            
+            packet.setAdd_information(addMember)
             if self.communicate(packet):
                 con = []
                 if get['user_type']=='一般用户':
@@ -369,4 +381,3 @@ class client:
 
 c = client()
 c.Log_check()
-
