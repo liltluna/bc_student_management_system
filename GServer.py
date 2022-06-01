@@ -188,7 +188,7 @@ class ResponseClient(threading.Thread):
         user = self.__packet.getOperator()
         info = self.__packet.getAdd_info()
         cur = self.__conn.cursor()
-        info_list = [str(info.getUser_name()),
+        info_list = [str(info.getName()),
                      str(info.getSex()),
                      str(info.getStudent_number()),
                      str(info.getGroup_number()),
@@ -217,18 +217,24 @@ class ResponseClient(threading.Thread):
         packet_response = GPacket.Packet_response_is_successful()
         SQL_exe = """select * from stu_info"""
 
-        if user.getUser_type() == 0:
+        if user.getUser_type() == 3:
             SQL_exe += ';'
             cur.execute(SQL_exe)
             data = cur.fetchall()
-        elif user.getUser_type() == 1:
-            group_number = user.getGroup_number()
-            SQL_exe += "where group_number = '" + group_number + "';"
-            cur.execute(SQL_exe)
+            # 组长
         elif user.getUser_type() == 2:
-            student_number = user.getStudent_number()
-            SQL_exe += "where student_number = '" + student_number + "';"
+            group_number = user.getGroup_number()
+            SQL_exe += ';'
+            # SQL_exe += "where group_number = '" + group_number + "';"
             cur.execute(SQL_exe)
+            # 用户 肯定有错
+            data = cur.fetchall()
+        elif user.getUser_type() == 1:
+            student_number = user.getStudent_number()
+            # SQL_exe += "where student_number = '" + student_number + "';"
+            SQL_exe += ';'
+            cur.execute(SQL_exe)
+            data = cur.fetchall()
         else:
             packet_response.setOperate_result(False)
             bp_response = pickle.dumps(packet_response)
@@ -240,8 +246,8 @@ class ResponseClient(threading.Thread):
         self.__target_client.send(bd)
         cur.close()
         packet_response.setOperate_result(False)
-        bp_response = pickle.dumps(packet_response)
-        self.__target_client.send(bp_response)
+        # bp_response = pickle.dumps(packet_response)
+        # self.__target_client.send(bp_response)
         self.recordOperate(user.getUser_name(), user.getUser_name(), 's')
 
     def run(self):
