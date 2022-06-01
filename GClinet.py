@@ -42,7 +42,7 @@ class client:
         try:
             self.tcpCliSock.connect(self.ADDR)
         except:
-            m = messagebox.askokcancel(title='提示', message='连接失败，请检查你的网络')
+             messagebox.askokcancel(title='提示', message='连接失败，请检查你的网络')
         else:
             self.Login()
 
@@ -127,7 +127,6 @@ class client:
     def View(self, name_g, ps_g):
 
         """判断权限，根据权限执行不同的内容，显示不同的页面
-
         """
         self.set_user_name(name_g)
         self.set_password(ps_g)
@@ -139,15 +138,16 @@ class client:
 
         operator = Packet_operate()
         operator.setOperator(GM)
-        packet1 = Packet_login(operator)  # 登陆请求
+        packet1 = Packet_login()  # 登陆请求
         packet2 = Packet_search_info(operator)  # 查询请求
 
         res1 = self.communicate(packet1)
         res2 = self.communicate(packet2)
 
         if not res1 or not res2:
+            messagebox.askokcancel(title='提示', message='找不到对象')
             exit(0)
-
+        
         self.fm1.pack_forget()
         self.fm2.pack_forget()
         self.fm3.pack()
@@ -161,8 +161,8 @@ class client:
         name_M = Message(self.fm3, text='姓名:')
         stu_M = Message(self.fm3, text='学号:')
 
-        name = Message(self.fm3, text=res2['name'])
-        stu = Message(self.fm3, text=res2['student_number'], aspect=800)
+        name = Message(self.fm3, text=res2[0][0])
+        stu = Message(self.fm3, text=res2[0][2], aspect=800)
 
         wel.place(x=650, y=50)
         name_M.place(x=500, y=200)
@@ -178,21 +178,28 @@ class client:
             '''普通组员'''
             ssbj = Message(self.fm3, text='所属班级')
             ssxz = Message(self.fm3, text='所属小组')
+            ssbj_M=Message(self.fm3,text='2020211317')
+            ssxz_M=Message(self.fm3,text=res2[0][3])
+
             ssbj.place(x=500, y=400)
             ssxz.place(x=500, y=500)
+            ssbj_M.place(x=700,y=400)
+            ssxz_M.place(x=700,y=500)
         if self.authority == 2:
             '''组长'''
             ssbj = Message(self.fm3, text='所属班级')
             glxz = Message(self.fm3, text='管理小组')
-
+            glxz_M=Message(self.fm3,text=res2[0][3])
+            ssbj_M=Message(self.fm3,text='2020211317')
             ssbj.place(x=500, y=400)
             glxz.place(x=500, y=500)
-
+            ssbj_M.place(x=700,y=400)
         if self.authority >= 3:
             '''授课老师'''
             glbj = Message(self.fm3, text='管理班级')
-
+            glbj_M=Message(self.fm3,text='2020211317')
             glbj.place(x=500, y=400)
+            glbj_M.place(x=700,y=400)
 
         tree = ttk.Treeview(M_N.sub_frame, columns=(
             'name', 'sex', 'student_number', 'group_number', 'qq_number', 'user_type', 'password', 'username'),
@@ -219,7 +226,8 @@ class client:
         def deljob():
             '''view界面的删除命令'''
             iid = tree.selection()
-            packet = Packet_delete_info(operator)
+            packet = Packet_delete_info()
+            packet.setOperator(operator)
             d = tree.item(tree.focus())
             delee = GUser.GroupMember()
             delee.setStuent_number(d['student_number'])
@@ -233,8 +241,8 @@ class client:
             add = Tk()
             name_M = Message(add, text='姓名')
             name = Entry(add)
-            sex_M = Message(add, text='性别')
-            sex = Entry(add)
+            sex_M =Message(add, text='性别')
+            sex = ttk.Combobox(add,  values=['M','F'], state='readonly')
             name_M.grid(row=0, column=0)
             name.grid(row=0, column=1)
             sex_M.grid(row=1, column=0)
@@ -250,7 +258,7 @@ class client:
             gro.grid(row=3, column=1)
 
             ut_M = Message(add, text='用户等级')
-            ut = Entry(add)
+            ut  = ttk.Combobox(add, values=['一般用户','组长','教师'], state='readonly')
             ps_M = Message(add, text='密码')
             ps = Entry(add)
             ut_M.grid(row=4, column=0)
@@ -270,29 +278,39 @@ class client:
             addB = Button(add, text='确定', command=lambda: adding(
                 {'name': name.get(), 'sex': sex.get(), 'student_number': stu.get(), 'group_number': gro.get(),
                  'qq_number': qq.get(), 'user_type': ut.get(), 'password': ps.get(), 'username': user.get()}))
-            addB.grid(row=3, column=0)
+            addB.grid(row=8,column=1)
+
+            
 
         def adding(get):
             """向服务器发送增加请求，并在收到回复后，进行增加"""
-            packet = Packet_add_info(operator)
+            packet = Packet_add_info()
+            packet.setOperator(operator)
             addMember = GUser.GroupMember()
 
-            packet.setAdd_information(addMember)
+            packet.setAdd_information()addMember)
             if self.communicate(packet):
                 con = []
+                if get['user_type']=='一般用户':
+                    get['user_type']=1
+                elif get['user_type']=='组长':
+                    get['user_type']=2
+                else :get['user_type']=3
+
+                
                 for key in get:
                     con.append(get[key])
                 tree.insert('', END, values=get)
 
-        for itm in data:
+        for itm in res2:
             tree.insert("", END, values=itm)
         tree.pack(fill=BOTH, expand=True)
 
         if self.authority > 1:
             delete = Button(M_N.sub_frame, text='删除', command=deljob)
             add = Button(M_N.sub_frame, text='增加', command=addjob)
-            delete.pack(side='RIGHT')
-            add.pack(side='LEFT')
+            delete.pack(side='right')
+            add.pack(side='left')
         self.top.mainloop()
 
     def back(self):
@@ -330,7 +348,7 @@ class client:
            ip与端口在创建类时进行指定，
            st表示要传输的内容"""
 
-        # p = Packet_login()
+        
         u = GUser.Master()
         u.setUser_name('bamboo')
         u.setPassword('12345**6')
@@ -338,12 +356,12 @@ class client:
         bp = pickle.dumps(packet)
         data1 = bp
 
-        # sig = input('>')
+    
         self.tcpCliSock.send(data1)
         data = self.tcpCliSock.recv(1024)
         res = pickle.loads(data)
         result = res.getPasswordSignal()
-        # print(res.getPasswordSignal())
+        
 
         self.tcpCliSock.close()
         return result
@@ -351,3 +369,4 @@ class client:
 
 c = client()
 c.Log_check()
+
