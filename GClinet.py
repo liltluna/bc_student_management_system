@@ -22,9 +22,9 @@ class client:
         self.fm2 = Frame(self.top)  # 注册页面
         self.fm3 = Frame(self.top)  # 登录后的显示页面
         self.opera = 'l'
-        self.authority = 0  # 权限等级，会根据用户的选择而改变
-        self.name = ''  # 用户名输入框
-        self.ps = ''  # 密码输入框
+        self.authority = 0          # 权限等级，会根据用户的选择而改变，登陆时需核对
+        self.name = ''              # 用户名输入框，登陆时需核对
+        self.ps = ''                # 密码输入框，登陆时需核对
 
 
         HOST = 'B-Altair'  # 使用的时候修改成服务器对应的名称
@@ -56,8 +56,8 @@ class client:
             self.Login()
     def Login(self):
 
-        '''登录页面，由用户选择权限，
-           输入用户名和密码，按钮的监听函数待完善'''
+        
+        ''' 选择权限，输入用户名和密码'''
          
         self.top.title('python分组管理系统')
         canvas_root = Canvas(self.fm1, width=1600, height=900)
@@ -97,7 +97,7 @@ class client:
         pass
 
     def Regist(self):
-        
+        '''注册页面，目前还需要一个完善信息的页面，等待设计'''
         
         self.fm1.pack_forget()
 
@@ -136,7 +136,7 @@ class client:
 
         '''判断权限，根据权限执行不同的内容，显示不同的页面
 
-        ，具体执行内容待完善'''
+        '''
         self.set_user_name(name_g)
         self.set_password(ps_g)
         
@@ -144,12 +144,12 @@ class client:
         GM=GUser.GroupMember()
         GM.setUser_name(self.name)
         GM.setPassword(self.ps)
-
+        GM.setUsertype(self.authority)
         
         operator=GPacket.Packet_operate()
         operator.setOperator(GM)
-        packet1 = Packet_login(operator)
-        packet2 = Packet_search_info(operator)
+        packet1 = Packet_login(operator)                 #登陆请求
+        packet2 = Packet_search_info(operator)           #查询请求
 
         res1=self.communicate(res1)
         res2=self.communicate(res2)
@@ -211,8 +211,7 @@ class client:
             glbj.place(x=500, y=400)
             
        
-        data = [(1, "小明", 23, '男', '2021-09-21'), (2, "小强", 23, '男', '2021-09-21'),
-               (3, "小红", 23, '女', '2021-09-21'), (4, "铁头", 23, '男', '2021-09-21')]
+      
         tree = ttk.Treeview(M_N.sub_frame, columns=('name', 'sex', 'student_number', 'group_number', 'qq_number','user_type','password','username'),show="headings", displaycolumns="#all")
 
         
@@ -236,7 +235,8 @@ class client:
         tree.heading('username', text="用户名", anchor=W)
 
         
-        def deljob(): # 真删除
+        def deljob(): 
+           '''view界面的删除命令'''
            iid=tree.selection()
            packet=GPacket.Packet_delete_info(operator)
            d=tree.item(tree.focus())
@@ -249,6 +249,7 @@ class client:
         
         
         def addjob():
+            '''view界面的增加命令'''
             add=Tk()
             name_M=Message(add,text='姓名')
             name=Entry(add)
@@ -295,6 +296,7 @@ class client:
                                                       'qq_number':qq.get(),'user_type':ut.get(),'password':ps.get(),'username':user.get()}))
             addB.grid(row=3,column=0)
         def adding(get):
+            '''向服务器发送增加请求，并在收到回复后，进行增加'''
             packet=GPacket.Packet_add_info(operator)
             addMember=GUser.GroupMember()
             
@@ -320,11 +322,12 @@ class client:
         self.top.mainloop()
         
     def back(self):
+        '''注册时选择返回选项，发生的事件'''
         self.fm1.pack()
         self.fm2.pack_forget()
 
     def Regist_check(self,name,un,ps):
-         
+        '''向服务器发送注册请求'''
         GM=GroupMember()
         GM.setName(name)
         GM.setUsername(un)
@@ -340,8 +343,9 @@ class client:
            m=messagebox.askokcancel(title = '提示',message='注册失败，请重新注册')
            
         
-
+    
     def Change_Authority(self, event, n):
+        '''注册时用来改变权限'''
         if n == '一般用户':
             self.authority = 1
         elif n == '组长':
