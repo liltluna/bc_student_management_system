@@ -136,8 +136,8 @@ class client:
         self.set_password(ps_g)
 
         GM = GUser.GroupMember()
-        GM.setUser_name('bamboo')
-        GM.setPassword('123456')
+        GM.setUser_name(self.name)
+        GM.setPassword(self.ps)
         GM.setUser_type(self.authority)
         operator = GM
 
@@ -236,8 +236,11 @@ class client:
             packet.setOperator(operator)
 
             d = tree.item(tree.focus())
+            d=d['values']
             delee = GUser.GroupMember()
-            delee.setStudent_number(d['student_number'])
+            
+            delee.setStudent_number(d[2])
+            print(d[2])
             packet.setDelete_info(delee)
             self.communicate(packet)
 
@@ -282,7 +285,7 @@ class client:
             user_M.grid(row=7, column=0)
             user.grid(row=7, column=1)
 
-            addB = Button(add, text='确定', command=lambda: adding(
+            addB = Button(add, text='确定', command=lambda:adding(
                 {'name': name.get(), 'sex': sex.get(), 'student_number': stu.get(), 'group_number': gro.get(),
                  'qq_number': qq.get(), 'user_type': ut.get(), 'password': ps.get(), 'username': user.get()},add))
             addB.grid(row=8, column=1)
@@ -314,7 +317,7 @@ class client:
                 for key in get:
                     con.append(get[key])
             tree.insert('', END, values=con)
-            add.quit()
+            add.destroy()
         for itm in res2:
             tree.insert("", END, values=itm)
         tree.pack(fill=BOTH, expand=True)
@@ -421,4 +424,3 @@ class client:
 
 c = client()
 c.Log_check()
-
