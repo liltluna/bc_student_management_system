@@ -20,11 +20,11 @@ class client:
         self.fm2 = Frame(self.top)  # 注册页面
         self.fm3 = Frame(self.top)  # 登录后的显示页面
         self.opera = 'l'
-        self.authority = 0  # 权限等级，会根据用户的选择而改变，登陆时需核对
-        self.name = ''  # 用户名输入框，登陆时需核对
-        self.ps = ''  # 密码输入框，登陆时需核对
+        self.authority = 0          # 权限等级，会根据用户的选择而改变，登陆时需核对
+        self.name = ''              # 用户名输入框，登陆时需核对
+        self.ps = ''                # 密码输入框，登陆时需核对
 
-        HOST = 'B-Altair'  # 使用的时候修改成服务器对应的名称
+        HOST = 'LAPTOP-UAO59IDV'           # 使用的时候修改成服务器对应的名称
         PORT = 8888
 
         self.ADDR = (HOST, PORT)
@@ -45,7 +45,7 @@ class client:
             self.tcpCliSock.connect(self.ADDR)
         except:
             messagebox.askokcancel(title='提示', message='连接失败，请检查你的网络')
-            exit(0)
+            self.top.destroy()
         else:
             self.Login()
 
@@ -124,7 +124,7 @@ class client:
         ps_M.place(x=600, y=350)
         Button(self.fm2, text='确定',
                command=lambda: self.Regist_check(name_E.get(), stu_E.get(), ps_E.get())).place(x=650, y=400)
-        Button(self.fm2, text='取消', command=self.back).place(x=725, y=400)
+        Button(self.fm2, text='取消', command=self.Login).place(x=725, y=400)
         self.top.mainloop()
 
     def View(self, name_g, ps_g):
@@ -199,6 +199,7 @@ class client:
             ssbj.place(x=500, y=400)
             glxz.place(x=500, y=500)
             ssbj_M.place(x=700, y=400)
+            glxz_M.place(x=700,y=500)
         if self.authority >= 3:
             '''授课老师'''
             glbj = Message(self.fm3, text='管理班级')
@@ -283,10 +284,10 @@ class client:
 
             addB = Button(add, text='确定', command=lambda: adding(
                 {'name': name.get(), 'sex': sex.get(), 'student_number': stu.get(), 'group_number': gro.get(),
-                 'qq_number': qq.get(), 'user_type': ut.get(), 'password': ps.get(), 'username': user.get()}))
+                 'qq_number': qq.get(), 'user_type': ut.get(), 'password': ps.get(), 'username': user.get()},add))
             addB.grid(row=8, column=1)
 
-        def adding(get):
+        def adding(get,add):
             """向服务器发送增加请求，并在收到回复后，进行增加"""
             if get['user_type']=='一般用户':
                     get['user_type']=1
@@ -313,7 +314,7 @@ class client:
                 for key in get:
                     con.append(get[key])
             tree.insert('', END, values=con)
-
+            add.quit()
         for itm in res2:
             tree.insert("", END, values=itm)
         tree.pack(fill=BOTH, expand=True)
@@ -325,26 +326,67 @@ class client:
             add.pack(side='left')
         self.top.mainloop()
 
-    def back(self):
-        '''注册时选择返回选项，发生的事件'''
-        self.fm1.pack()
-        self.fm2.pack_forget()
 
-    def Regist_check(self, name, un, ps):
+    def Regist_check(self, name, un, ps):#用户名，学号，密码
         """向服务器发送注册请求"""
         GM = GUser.GroupMember()
-        GM.setName(name)
-        GM.setUsername(un)
+        GM.setUser_name(name)
+        GM.setStudent_number(un)
         GM.setPassword(ps)
-        GM.setUsertype(self.authority)
-        operator = Packet_add_info()
-        operator.setAdd_information(GM)
+        GM.setUser_type(self.authority)
+        
+        
+        self.fm2.pack_forget()
+        fm4=Frame(self.top)
+        
+        canvas_root = Canvas(fm4, width=1600, height=900)
+        im_root = HP.get_img('bj.png', 1600, 900)
+        canvas_root.create_image(800, 450, image=im_root)
+        canvas_root.pack()
+        wel = Message(fm4, foreground='green', text='请输入补充信息', aspect=800)
+        name_M=Message(fm4,text='姓名')
+        sex_M=Message(fm4,text='性别')
+        group_M=Message(fm4,text='所属小组')
+        QQ_M=Message(fm4,text='QQ号')
+        group_now=[]
 
-        if self.communicate(operator):
-            self.view(un, ps)
-        else:
+        name=Entry(fm4)
+        sex=ttk.Combobox(fm4, values=['M', 'F'], state='readonly')
+        group=ttk.Combobox(fm4, textvariable='请选择你的小组', values=group_now, state='readonly')      #group_now待定，为现有小组
+        QQ=Entry(fm4)
+        Bqd=Button(fm4,text='确定',command=lambda:check(name.get(),sex.get(),group.get(),QQ.get()))
+        Bqx=Button(fm4,text='取消',command=self.Regist)
+        wel.place(x=650, y=50)
+        
+        name_M.place(x=500,y=200)
+        name.place(x=700,y=200)
+        
+        sex_M.place(x=500,y=300)
+        sex.place(x=700,y=300)
 
-            m = messagebox.askokcancel(title='提示', message='注册失败，请重新注册')
+        group_M.place(x=500,y=400)
+        group.place(x=700,y=400)
+
+        QQ_M.place(x=500,y=500)
+        QQ.place(x=700,y=500)
+
+        Bqd.place(x=600,y=750)
+        Bqx.place(x=800,y=750)
+        fm4.pack()
+        self.top.mainloop()
+        def check(name,sex,group,QQ):
+            GM.setName(name)
+            GM.setSex(sex)
+            GM.setGroup_number(group)
+            GM.setQQ_number(QQ)
+            operator = Packet_add_info()
+            operator.setAdd_information(GM)
+
+            if self.communicate(operator):
+                 self.view(un, ps)
+            else:
+
+                 m = messagebox.askokcancel(title='提示', message='注册失败，请重新注册')
 
     def Change_Authority(self, event, n):
         """注册时用来改变权限"""
@@ -379,3 +421,4 @@ class client:
 
 c = client()
 c.Log_check()
+
