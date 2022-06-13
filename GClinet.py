@@ -20,11 +20,11 @@ class client:
         self.fm2 = Frame(self.top)  # 注册页面
         self.fm3 = Frame(self.top)  # 登录后的显示页面
         self.opera = 'l'
-        self.authority = 0          # 权限等级，会根据用户的选择而改变，登陆时需核对
-        self.name = ''              # 用户名输入框，登陆时需核对
-        self.ps = ''                # 密码输入框，登陆时需核对
+        self.authority = 0  # 权限等级，会根据用户的选择而改变，登陆时需核对
+        self.name = ''  # 用户名输入框，登陆时需核对
+        self.ps = ''  # 密码输入框，登陆时需核对
 
-        HOST = 'LAPTOP-UAO59IDV'           # 使用的时候修改成服务器对应的名称
+        HOST = 'B-Altair'  # 使用的时候修改成服务器对应的名称
         PORT = 8888
 
         self.ADDR = (HOST, PORT)
@@ -151,7 +151,7 @@ class client:
         if not res1:
             print(res1)
             messagebox.askokcancel(title='提示', message='找不到对象')
-            exit(0)
+            self.top.destroy()
 
         self.fm1.pack_forget()
         self.fm2.pack_forget()
@@ -178,6 +178,9 @@ class client:
         M_N = ToggledFrame(self.fm3, text='管理结果', width=200, height=30)
 
         M_N.place(x=450, y=550)
+        tree = ttk.Treeview(M_N.sub_frame, columns=(
+            'name', 'sex', 'student_number', 'group_number', 'qq_number', 'user_type', 'password', 'username'),
+                            show="headings", displaycolumns="#all")
 
         if self.authority == 1:
             '''普通组员'''
@@ -199,17 +202,15 @@ class client:
             ssbj.place(x=500, y=400)
             glxz.place(x=500, y=500)
             ssbj_M.place(x=700, y=400)
-            glxz_M.place(x=700,y=500)
+            glxz_M.place(x=700, y=500)
         if self.authority >= 3:
             '''授课老师'''
             glbj = Message(self.fm3, text='管理班级')
             glbj_M = Message(self.fm3, text='2020211317')
             glbj.place(x=500, y=400)
             glbj_M.place(x=700, y=400)
-
-        tree = ttk.Treeview(M_N.sub_frame, columns=(
-            'name', 'sex', 'student_number', 'group_number', 'qq_number', 'user_type', 'password', 'username'),
-                            show="headings", displaycolumns="#all")
+            yjdr = Button(self.fm3, text='一键导入', command=lambda: self.Import('person.csv', tree))
+            yjdr.place(x=0, y=0)
 
         tree.column('name', width=80)
         tree.column('sex', width=50)
@@ -236,9 +237,9 @@ class client:
             packet.setOperator(operator)
 
             d = tree.item(tree.focus())
-            d=d['values']
+            d = d['values']
             delee = GUser.GroupMember()
-            
+
             delee.setStudent_number(d[2])
             print(d[2])
             packet.setDelete_info(delee)
@@ -285,18 +286,19 @@ class client:
             user_M.grid(row=7, column=0)
             user.grid(row=7, column=1)
 
-            addB = Button(add, text='确定', command=lambda:adding(
+            addB = Button(add, text='确定', command=lambda: adding(
                 {'name': name.get(), 'sex': sex.get(), 'student_number': stu.get(), 'group_number': gro.get(),
-                 'qq_number': qq.get(), 'user_type': ut.get(), 'password': ps.get(), 'username': user.get()},add))
+                 'qq_number': qq.get(), 'user_type': ut.get(), 'password': ps.get(), 'username': user.get()}, add))
             addB.grid(row=8, column=1)
 
-        def adding(get,add):
+        def adding(get, add):
             """向服务器发送增加请求，并在收到回复后，进行增加"""
-            if get['user_type']=='一般用户':
-                    get['user_type']=1
-            elif get['user_type']=='组长':
-                    get['user_type']=2
-            else :get['user_type']=3
+            if get['user_type'] == '一般用户':
+                get['user_type'] = 1
+            elif get['user_type'] == '组长':
+                get['user_type'] = 2
+            else:
+                get['user_type'] = 3
             packet = Packet_add_info()
             packet.setOperator(operator)
             addMember = GUser.GroupMember()
@@ -310,7 +312,6 @@ class client:
             addMember.setStudent_number(get['student_number'])
             addMember.setQQ_number(get['qq_number'])
 
-            
             packet.setAdd_information(addMember)
             if self.communicate(packet):
                 con = []
@@ -318,6 +319,7 @@ class client:
                     con.append(get[key])
             tree.insert('', END, values=con)
             add.destroy()
+
         for itm in res2:
             tree.insert("", END, values=itm)
         tree.pack(fill=BOTH, expand=True)
@@ -329,55 +331,54 @@ class client:
             add.pack(side='left')
         self.top.mainloop()
 
-
-    def Regist_check(self, name, un, ps):#用户名，学号，密码
+    def Regist_check(self, name, un, ps):  # 用户名，学号，密码
         """向服务器发送注册请求"""
         GM = GUser.GroupMember()
         GM.setUser_name(name)
         GM.setStudent_number(un)
         GM.setPassword(ps)
         GM.setUser_type(self.authority)
-        
-        
+
         self.fm2.pack_forget()
-        fm4=Frame(self.top)
-        
+        fm4 = Frame(self.top)
+
         canvas_root = Canvas(fm4, width=1600, height=900)
         im_root = HP.get_img('bj.png', 1600, 900)
         canvas_root.create_image(800, 450, image=im_root)
         canvas_root.pack()
         wel = Message(fm4, foreground='green', text='请输入补充信息', aspect=800)
-        name_M=Message(fm4,text='姓名')
-        sex_M=Message(fm4,text='性别')
-        group_M=Message(fm4,text='所属小组')
-        QQ_M=Message(fm4,text='QQ号')
-        group_now=[]
+        name_M = Message(fm4, text='姓名')
+        sex_M = Message(fm4, text='性别')
+        group_M = Message(fm4, text='所属小组')
+        QQ_M = Message(fm4, text='QQ号')
+        group_now = []
 
-        name=Entry(fm4)
-        sex=ttk.Combobox(fm4, values=['M', 'F'], state='readonly')
-        group=ttk.Combobox(fm4, textvariable='请选择你的小组', values=group_now, state='readonly')      #group_now待定，为现有小组
-        QQ=Entry(fm4)
-        Bqd=Button(fm4,text='确定',command=lambda:check(name.get(),sex.get(),group.get(),QQ.get()))
-        Bqx=Button(fm4,text='取消',command=self.Regist)
+        name = Entry(fm4)
+        sex = ttk.Combobox(fm4, values=['M', 'F'], state='readonly')
+        group = ttk.Combobox(fm4, textvariable='请选择你的小组', values=group_now, state='readonly')  # group_now待定，为现有小组
+        QQ = Entry(fm4)
+        Bqd = Button(fm4, text='确定', command=lambda: check(name.get(), sex.get(), group.get(), QQ.get()))
+        Bqx = Button(fm4, text='取消', command=self.Regist)
         wel.place(x=650, y=50)
-        
-        name_M.place(x=500,y=200)
-        name.place(x=700,y=200)
-        
-        sex_M.place(x=500,y=300)
-        sex.place(x=700,y=300)
 
-        group_M.place(x=500,y=400)
-        group.place(x=700,y=400)
+        name_M.place(x=500, y=200)
+        name.place(x=700, y=200)
 
-        QQ_M.place(x=500,y=500)
-        QQ.place(x=700,y=500)
+        sex_M.place(x=500, y=300)
+        sex.place(x=700, y=300)
 
-        Bqd.place(x=600,y=750)
-        Bqx.place(x=800,y=750)
+        group_M.place(x=500, y=400)
+        group.place(x=700, y=400)
+
+        QQ_M.place(x=500, y=500)
+        QQ.place(x=700, y=500)
+
+        Bqd.place(x=600, y=750)
+        Bqx.place(x=800, y=750)
         fm4.pack()
         self.top.mainloop()
-        def check(name,sex,group,QQ):
+
+        def check(name, sex, group, QQ):
             GM.setName(name)
             GM.setSex(sex)
             GM.setGroup_number(group)
@@ -386,10 +387,36 @@ class client:
             operator.setAdd_information(GM)
 
             if self.communicate(operator):
-                 self.view(un, ps)
+                self.view(un, ps)
             else:
 
-                 m = messagebox.askokcancel(title='提示', message='注册失败，请重新注册')
+                m = messagebox.askokcancel(title='提示', message='注册失败，请重新注册')
+
+    def Import(self, path, tree):
+
+        import pandas as pd
+
+        packet = GPacket.Packet_add_info()
+        data = pd.read_csv(path)
+        member_list = data.values.tolist()
+        for i, j, k, l in member_list:
+            add_context = GUser.GroupMember()
+            add_context.setGroup_number(i)
+            add_context.setName(j)
+            add_context.setStudent_number(k)
+            if l == 'N':
+                l = 1
+                add_context.setUser_type(1)
+            else:
+                l = 2
+                add_context.setUser_type(2)
+            add_context.setQQ_number('10110')
+            add_context.setSex('F')
+            add_context.setUser_name('root')
+            add_context.setPassword('123456')
+            packet.setAdd_information(add_context)
+            if self.communicate(packet):
+                tree.insert('', END, values = [j, 'F', k, i, '10110', l, '123456', 'root'])
 
     def Change_Authority(self, event, n):
         """注册时用来改变权限"""
@@ -409,7 +436,7 @@ class client:
         data1 = bp
 
         self.tcpCliSock.send(data1)
-        data = self.tcpCliSock.recv(1024)
+        data = self.tcpCliSock.recv(20480)
         res = pickle.loads(data)
         result = None
         if type(res) == type(GPacket.Packet_response_login()):
