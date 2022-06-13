@@ -40,6 +40,8 @@ class Server:
         port = 8888
         ADDR = (hostname, port)
 
+        dataLock = threading.Lock()
+
         server_socket.bind(ADDR)
         server_socket.listen()
 
@@ -114,6 +116,10 @@ class ResponseClient(threading.Thread):
         return self.__target_client
 
     def recordOperate(self, user_operator, user_target, operate_type):
+        if user_operator is None:
+            user_operator = 'Root'
+        if user_target is None:
+            user_target = 'Not Found'
         SQL_rec = """insert into operate_record values ('""" + user_operator \
                   + "'," + "'" + operate_type + "'," \
                   + "'" + user_target + "'," + 'default);'
@@ -126,7 +132,7 @@ class ResponseClient(threading.Thread):
         """回应登录请求"""
         user = self.__packet.getOperator()
         cur = self.__conn.cursor()
-        SQL = """select password from stu_info where user_name = '""" + user.getUser_name() + "'"
+        SQL = "select password from stu_info where user_name = '" + user.getUser_name() + "';"
         cur.execute(SQL)
         password = cur.fetchone()
         if self.__packet.getOperator().getPassword() in password:
@@ -139,15 +145,16 @@ class ResponseClient(threading.Thread):
             packet_response.setPasswordSignal(False)
             bp_response = pickle.dumps(packet_response)
             self.__target_client.send(bp_response)
-        self.recordOperate(user.getUser_name(), user.getUser_name(), 'l')
+        # self.recordOperate(user.getUser_name(), user.getUser_name(), 'l')
         cur.close()
 
     def responseDelete(self):
+
         """回应删除请求"""
         user = self.__packet.getOperator()
         info = self.__packet.getDelete_info()
         cur = self.__conn.cursor()
-        SQL_exe = """delete from stu_info where student_number = '""" + info.getStudent_number() + "'"
+        SQL_exe = """delete from stu_info where student_number = '""" + str(info.getStudent_number()) + "';"
         cur.execute(SQL_exe)
         self.__conn.commit()
         # 加上操作是否完成的判断工作，加上返回给客户端的数据,目前只会返回成功。
@@ -215,24 +222,20 @@ class ResponseClient(threading.Thread):
         user = self.__packet.getOperator()
         cur = self.__conn.cursor()
         packet_response = GPacket.Packet_response_is_successful()
-        SQL_exe = """select * from stu_info"""
+        SQL_exe = """select * from stu_info """
 
         if user.getUser_type() == 3:
             SQL_exe += ';'
             cur.execute(SQL_exe)
             data = cur.fetchall()
-            # 组长
         elif user.getUser_type() == 2:
-            group_number = user.getGroup_number()
-            SQL_exe += ';'
-            # SQL_exe += "where group_number = '" + group_number + "';"
+            name = user.getUser_name()
+            SQL_exe += "where user_name = '" + name + "';"
             cur.execute(SQL_exe)
-            # 用户 肯定有错
             data = cur.fetchall()
         elif user.getUser_type() == 1:
-            student_number = user.getStudent_number()
-            # SQL_exe += "where student_number = '" + student_number + "';"
-            SQL_exe += ';'
+            name = user.getUser_name()
+            SQL_exe += "where user_name = '" + name + "';"
             cur.execute(SQL_exe)
             data = cur.fetchall()
         else:
