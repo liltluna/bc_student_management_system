@@ -24,7 +24,7 @@ class client:
         self.name = ''  # 用户名输入框，登陆时需核对
         self.ps = ''  # 密码输入框，登陆时需核对
 
-        HOST = 'B-Altair'  # 使用的时候修改成服务器对应的名称
+        HOST = gethostname()  # 使用的时候修改成服务器对应的名称
         PORT = 8888
 
         self.ADDR = (HOST, PORT)
@@ -135,6 +135,10 @@ class client:
         self.set_user_name(name_g)
         self.set_password(ps_g)
 
+        if not name_g or not ps_g:
+            messagebox.askokcancel(title='提示', message='用户名与密码不能为空')
+            self.top.destroy()
+            return
         GM = GUser.GroupMember()
         GM.setUser_name(self.name)
         GM.setPassword(self.ps)
@@ -146,7 +150,6 @@ class client:
         packet2 = Packet_search_info()  # 查询请求
         packet2.setOperator(GM)
         res1 = self.communicate(packet1)
-        res2 = self.communicate(packet2)
 
         if not res1:
             print(res1)
@@ -166,8 +169,15 @@ class client:
         name_M = Message(self.fm3, text='姓名:')
         stu_M = Message(self.fm3, text='学号:')
 
-        name = Message(self.fm3, text=res2[0][0])
-        stu = Message(self.fm3, text=res2[0][2], aspect=800)
+        # result=[]
+        res2 = self.communicate(packet2)
+
+        for itm in res2:
+            if itm['user_name'] == self.name and itm['password'] == self.ps:
+                information = itm
+                break
+        name = Message(self.fm3, text=information['name'])
+        stu = Message(self.fm3, text=information['student_number'], aspect=800)
 
         wel.place(x=650, y=50)
         name_M.place(x=500, y=200)
@@ -187,7 +197,7 @@ class client:
             ssbj = Message(self.fm3, text='所属班级')
             ssxz = Message(self.fm3, text='所属小组')
             ssbj_M = Message(self.fm3, text='2020211317')
-            ssxz_M = Message(self.fm3, text=res2[0][3])
+            ssxz_M = Message(self.fm3, text=information['group_number'])
 
             ssbj.place(x=500, y=400)
             ssxz.place(x=500, y=500)
@@ -197,7 +207,7 @@ class client:
             '''组长'''
             ssbj = Message(self.fm3, text='所属班级')
             glxz = Message(self.fm3, text='管理小组')
-            glxz_M = Message(self.fm3, text=res2[0][3])
+            glxz_M = Message(self.fm3, text=information['group_number'])
             ssbj_M = Message(self.fm3, text='2020211317')
             ssbj.place(x=500, y=400)
             glxz.place(x=500, y=500)
@@ -211,6 +221,9 @@ class client:
             glbj_M.place(x=700, y=400)
             yjdr = Button(self.fm3, text='一键导入', command=lambda: self.Import('person.csv', tree))
             yjdr.place(x=0, y=0)
+
+            zstp=Button(self.fm3,text='展示图片',command= self.show_graph)
+            zstp.place(x=100,y=0)
 
         tree.column('name', width=80)
         tree.column('sex', width=50)
@@ -321,6 +334,7 @@ class client:
             add.destroy()
 
         for itm in res2:
+            itm=tuple(itm.values())
             tree.insert("", END, values=itm)
         tree.pack(fill=BOTH, expand=True)
 
@@ -330,7 +344,20 @@ class client:
             delete.pack(side='right')
             add.pack(side='left')
         self.top.mainloop()
+    def show_graph(self):
+        fm=Frame(self.top)
+        fm3,pack_forget()
+        fm.pack()
 
+        canvas_root = Canvas(fm, width=1600, height=900)
+        im_root = HP.get_img('bj.png', 1600, 900)
+        canvas_root.create_image(800, 450, image=im_root)
+        canvas_root.pack()
+
+        img_gif=PhotoImage(file='sinc.png')
+        label_img=Label(fm,image=img_gif)
+        label_img.place(x=300,y=100)
+        
     def Regist_check(self, name, un, ps):  # 用户名，学号，密码
         """向服务器发送注册请求"""
         GM = GUser.GroupMember()
@@ -416,7 +443,7 @@ class client:
             add_context.setPassword('123456')
             packet.setAdd_information(add_context)
             if self.communicate(packet):
-                tree.insert('', END, values = [j, 'F', k, i, '10110', l, '123456', 'root'])
+                tree.insert('', END, values=[j, 'F', k, i, '10110', l, '123456', 'root'])
 
     def Change_Authority(self, event, n):
         """注册时用来改变权限"""
@@ -434,17 +461,23 @@ class client:
 
         bp = pickle.dumps(packet)
         data1 = bp
-
         self.tcpCliSock.send(data1)
-        data = self.tcpCliSock.recv(20480)
+
+        data = self.tcpCliSock.recv(1024)
         res = pickle.loads(data)
         result = None
+
         if type(res) == type(GPacket.Packet_response_login()):
             result = res.getPasswordSignal()
         elif type(res) == type(GPacket.Packet_response_is_successful()):
             result = res.getOperate_result()
         elif type(res) == type(GPacket.Packet_response_data()):
-            result = res.getData()
+            allData = []
+            while res.getData()['user_name'] != 's':
+                allData.append(res.getData())
+                data = self.tcpCliSock.recv(1024)
+                res = pickle.loads(data)
+            result = allData
 
         return result
 
