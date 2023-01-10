@@ -1,6 +1,8 @@
 # Management_System
 for **python divide into groups**
 
+北京邮电大学软件工程Python课程最终实验
+
 ## 细节介绍参考
 https://github.com/BreathAir/Management_System/blob/main/design.md
 
